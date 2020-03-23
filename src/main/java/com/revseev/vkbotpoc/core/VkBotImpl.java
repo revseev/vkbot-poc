@@ -1,5 +1,7 @@
 package com.revseev.vkbotpoc.core;
 
+import com.revseev.vkbotpoc.model.User;
+import com.revseev.vkbotpoc.services.UserServiceI;
 import com.revseev.vkbotpoc.util.StringParser;
 import com.vk.api.sdk.client.VkApiClient;
 import com.vk.api.sdk.client.actors.GroupActor;
@@ -28,6 +30,8 @@ import java.util.Random;
 public class VkBotImpl implements ChatBot {
     private final VkApiClient apiClient = new VkApiClient(HttpTransportClient.getInstance());
     private GroupActor groupActor;
+    private UserServiceI userService;
+
 
     @Value("${bot.group.id}")
     private int groupID;
@@ -38,7 +42,8 @@ public class VkBotImpl implements ChatBot {
     private Properties chatProperties = new Properties();
 
 
-    public VkBotImpl() {
+    public VkBotImpl(UserServiceI userService) {
+        this.userService = userService;
     }
 
     // читаем chat.properties
@@ -70,14 +75,12 @@ public class VkBotImpl implements ChatBot {
     @Override
     public void replyForMessages(List<Message> messages) {
         String body;
+        Integer userId;
 
         for (Message message : messages) {
             body = message.getBody();
 
             if (body.equals("Начать")){
-                System.out.println(defaultKeyboard);
-                System.out.println("========");
-                System.out.println(startKeyboard);
                 // отправить пользователю две кнопки "Ответить на вопросы" и "Посмотреть результаты"
                 sendMessage("Привет! Выбери один из вариантов", defaultKeyboard, message.getUserId());
                 return;
@@ -94,7 +97,10 @@ public class VkBotImpl implements ChatBot {
                         return;
                     }
                     // сохранить возраст
-                    sendMessage(poll, message.getUserId());
+                    userId = message.getUserId();
+                    User user = userService.getById()
+                    userService.add(new User(userId,));
+                    sendMessage(poll, userId);
                     return;
 
                 }
@@ -171,15 +177,15 @@ public class VkBotImpl implements ChatBot {
 
     String startKeyboard = "{\n" +
             "  \"one_time\": false,\n" +
-            "  \"buttons\": [\n" +
+            "  \"buttons\": [[\n" +
             "      {\n" +
             "        \"action\": {\n" +
             "          \"type\": \"text\",\n" +
-            "          \"payload\": \"{\\\"button\\\": \\\"1\\\"}\",\n" +
+//            "          \"payload\": \"{\\\"button\\\": \\\"1\\\"}\",\n" +
             "          \"label\": \"Начать\"\n" +
             "        },\n" +
-            "        \"color\": \"primary\"\n" +
+            "        \"color\": \"default\"\n" +
             "      }\n" +
-            "  ]\n" +
+            "  ]]\n" +
             "} ";
 }
